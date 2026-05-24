@@ -3,7 +3,8 @@ const app = express();
 
 const path = require("path");
 const { title } = require("process");
-const dbPath = path.join(__dirname, "studio.db");
+const dbDirectory = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
+const dbPath = path.join(dbDirectory, "studio.db");
 
 const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
