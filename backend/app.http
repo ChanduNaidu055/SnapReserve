@@ -1,0 +1,66 @@
+### 1. Create a photography package
+POST http://localhost:4000/api/packages
+Content-Type: application/json
+
+{
+    "name": "Wedding Premium",
+    "price": 1500,
+    "duration": "8 hours",
+    "services": "Photography, Drone, Album"
+}
+
+### 2. Get all photography packages (Returns DB records or fallback arrays)
+GET http://localhost:4000/api/packages
+
+### 3. Get all photographers for the Booking Dropdown
+GET http://localhost:4000/api/photographers
+
+### 4. Check photographer availability for a specific date
+GET http://localhost:4000/api/photographers/availability?date=2026-06-15
+
+### 5. Create a booking 
+POST http://localhost:4000/api/bookings
+Content-Type: application/json
+
+{
+    "customer_name": "John Doe",
+    "package_id": 1,
+    "photographer_id": 1,
+    "date": "2026-06-15",
+    "event_type": "Wedding"
+}
+
+### 6. Try to create an OVERLAPPING booking (Should return a 400 status error)
+POST http://localhost:4000/api/bookings
+Content-Type: application/json
+
+{
+    "customer_name": "Alice Smith",
+    "package_id": 1,
+    "photographer_id": 1,
+    "date": "2026-06-15",
+    "event_type": "Pre-Wedding"
+}
+
+### 7. List bookings with filters and pagination applied
+GET http://localhost:4000/api/bookings?status=Pending&limit=5&offset=0
+
+### 8. Update booking status
+PUT http://localhost:4000/api/bookings/1/status
+Content-Type: application/json
+
+{
+    "status": "Confirmed"
+}
+
+### 9. Get complete studio metrics dashboard statistics
+GET http://localhost:4000/api/dashboard/studio
+
+### 10. Get gallery preview items (Includes automatic DB hang safety threshold)
+GET http://localhost:4000/api/gallery
+
+### 11. Get revenue analytics dataset for visual charts
+GET http://localhost:4000/api/analytics/revenue
+
+### 12. Get booking validation reminder alerts
+GET http://localhost:4000/api/bookings/reminders
