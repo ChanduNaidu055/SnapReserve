@@ -4,6 +4,8 @@ import { Oval } from "react-loader-spinner";
 import { useNavigate } from "react-router-dom"; 
 import "./index.css";
 
+const API_URL = process.env.REACT_APP_API_URL || "https://snapreserve-production.up.railway.app";
+
 const Dashboard = () => {
   const navigate = useNavigate(); 
   
@@ -15,10 +17,10 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const metricsResponse = await axios.get("/api/dashboard/studio");
+        const metricsResponse = await axios.get(`${API_URL}/api/dashboard/studio`);
         setMetrics(metricsResponse.data);
 
-     const bookingsResponse = await axios.get("/api/bookings?limit=5");
+     const bookingsResponse = await axios.get(`${API_URL}/api/bookings?limit=5`);
      setRecentShoots(Array.isArray(bookingsResponse.data) ? bookingsResponse.data : []);
 
         setLoading(false);

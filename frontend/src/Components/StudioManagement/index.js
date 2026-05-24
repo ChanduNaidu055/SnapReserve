@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./index.css"; 
 
+const API_URL = process.env.REACT_APP_API_URL || "https://snapreserve-production.up.railway.app";
+
 const StudioManagement = () => {
   const [bookings, setBookings] = useState([]);
   const [photographers, setPhotographers] = useState([]);
@@ -18,14 +20,14 @@ const StudioManagement = () => {
     try {
       const offset = (page - 1) * limit;
       
-      let queryUrl = `/api/bookings?limit=${limit}&offset=${offset}`;
+      let queryUrl = `${API_URL}/api/bookings?limit=${limit}&offset=${offset}`;
       if (statusFilter) queryUrl += `&status=${statusFilter}`;
       if (photoFilter) queryUrl += `&photographer_id=${photoFilter}`;
       if (searchName) queryUrl += `&customer_name=${searchName}`;
 
       const [bookingsRes, photographersRes] = await Promise.all([
         axios.get(queryUrl),
-        axios.get("/api/photographers")
+        axios.get(`${API_URL}/api/photographers`)
       ]);
       
       setBookings(bookingsRes.data || []);
@@ -48,7 +50,7 @@ const StudioManagement = () => {
 
   const updateStatus = async (id, newStatus) => {
     try {
-      await axios.put(`/api/bookings/${id}/status`, { status: newStatus });
+      await axios.put(`${API_URL}/api/bookings/${id}/status`, { status: newStatus });
       fetchStudioData(); 
     } catch (error) {
       console.error("Error updating status:", error);

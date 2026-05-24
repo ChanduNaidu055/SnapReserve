@@ -3,6 +3,8 @@ import axios from "axios";
 import { Oval } from "react-loader-spinner";
 import "./index.css";
 
+const API_URL = process.env.REACT_APP_API_URL || "https://snapreserve-production.up.railway.app";
+
 const PhotographerSchedule = () => {
   const [photographers, setPhotographers] = useState([]);
   const [selectedId, setSelectedId] = useState("");
@@ -12,7 +14,7 @@ const PhotographerSchedule = () => {
   useEffect(() => {
     const fetchPhotographers = async () => {
       try {
-        const response = await axios.get("/api/photographers/availability");
+        const response = await axios.get(`${API_URL}/api/photographers/availability`);
         setPhotographers(response.data);
       } catch (err) { console.error(err); }
     };
@@ -24,7 +26,7 @@ const PhotographerSchedule = () => {
       if (!selectedId) return;
       setLoadingSchedule(true);
       try {
-        const response = await axios.get(`/api/bookings?photographer_id=${selectedId}`);
+        const response = await axios.get(`${API_URL}/api/bookings?photographer_id=${selectedId}`);
         const sortedData = (response.data || []).sort((a, b) => new Date(a.date) - new Date(b.date));
         setSchedule(sortedData);
         setLoadingSchedule(false);

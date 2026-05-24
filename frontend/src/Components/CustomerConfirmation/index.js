@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./index.css";
 
+const API_URL = process.env.REACT_APP_API_URL || "https://snapreserve-production.up.railway.app";
+
 const CustomerConfirmation = () => {
   const [searchName, setSearchName] = useState("");
   const [results, setResults] = useState(null);
@@ -12,7 +14,7 @@ const CustomerConfirmation = () => {
     if (!searchName.trim()) return;
     setSearching(true);
     try {
-      const response = await axios.get(`/api/bookings?customer_name=${searchName}`); 
+      const response = await axios.get(`${API_URL}/api/bookings?customer_name=${searchName}`); 
       setResults(response.data);
       setSearching(false);
     } catch (err) {

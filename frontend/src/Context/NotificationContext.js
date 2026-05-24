@@ -1,6 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL || "https://snapreserve-production.up.railway.app";
+
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
@@ -9,7 +11,7 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     const fetchBackendReminders = async () => {
       try {
-        const response = await axios.get("/api/bookings/reminders");
+        const response = await axios.get(`${API_URL}/api/bookings/reminders`);
         if (response.data && response.data.length > 0) {
           const backendNotifs = response.data.map(notif => ({
             id: `backend-${notif.id}-${Date.now()}`,

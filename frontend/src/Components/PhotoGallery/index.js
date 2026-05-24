@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./index.css";
 
+const API_URL = process.env.REACT_APP_API_URL || "https://snapreserve-production.up.railway.app";
+
 const PhotoGallery = () => {
   const [portfolioData, setPortfolioData] = useState([]);
   const [filter, setFilter] = useState("All");
@@ -13,7 +15,7 @@ const PhotoGallery = () => {
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        const response = await axios.get("/api/gallery");
+        const response = await axios.get(`${API_URL}/api/gallery`);
         setPortfolioData(Array.isArray(response.data) ? response.data : []);
         setLoading(false);
       } catch (err) {
