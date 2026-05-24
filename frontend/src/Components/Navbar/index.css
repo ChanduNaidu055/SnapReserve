@@ -1,0 +1,115 @@
+:root {
+  --nav-bg: rgba(26, 26, 26, 0.95);
+  --nav-text: #a0a0a0;
+  --nav-hover: #ffffff;
+  --nav-accent: #00bcd4;
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  height: 76px;
+  background-color: var(--nav-bg);
+  backdrop-filter: blur(12px); 
+  -webkit-backdrop-filter: blur(12px);
+  font-family: var(--font-stack);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-logo a {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo a::after {
+  content: '.';
+  color: var(--nav-accent);
+}
+
+.navbar-links {
+  display: flex;
+  gap: 30px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.navbar-links a {
+  color: var(--nav-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  position: relative;
+  padding: 8px 0;
+}
+
+.navbar-links a:hover {
+  color: var(--nav-hover);
+}
+
+.navbar-links a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: var(--nav-accent);
+  transition: width 0.3s ease;
+}
+
+.navbar-links a:hover::after,
+.navbar-links a.active::after {
+  width: 100%;
+}
+
+.navbar-links a.active {
+  color: var(--nav-hover);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.notification-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.btn-book-session {
+  background-color: #00d4ef;
+  color: #111111;
+  padding: 10px 22px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 188, 212, 0.2);
+  font-family: "caveat", cursive;
+}
+
+.btn-book-session:hover {
+  background-color: #3498db;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 188, 212, 0.35);
+  color: #000;
+}

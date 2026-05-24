@@ -1,0 +1,169 @@
+.packages-workspace { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    font-family: sans-serif; 
+}
+
+.workspace-hero { 
+    margin-bottom: 30px; 
+}
+
+.workspace-hero h1 { 
+    font-size: 28px; 
+    color: #1a252f; 
+    margin: 0 0 6px 0; 
+}
+
+.workspace-hero p { 
+    margin: 0; 
+    color: #7f8c8d; 
+    font-size: 15px; 
+}
+
+.packages-split-layout { 
+    display: grid; 
+    grid-template-columns: 1fr 2fr; 
+    gap: 30px; 
+}
+
+@media (max-width: 900px) { 
+    .packages-split-layout { 
+        grid-template-columns: 1fr; 
+    } 
+}
+
+.form-card-panel { 
+    background: #fff; 
+    padding: 24px; 
+    border-radius: 12px; 
+    border: 1px solid #eef2f5; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02); 
+    height: fit-content; 
+}
+
+.form-card-panel h3, 
+.catalog-display-panel h3 { 
+    font-size: 18px; 
+    margin: 0 0 20px 0; 
+    color: #2c3e50; 
+    border-bottom: 2px solid #eef2f5; 
+    padding-bottom: 10px; 
+}
+
+.premium-form { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+}
+
+.input-group { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+}
+
+.input-group label { 
+    font-size: 13px; 
+    font-weight: 600; 
+    color: #34495e; 
+}
+
+.input-group input, 
+.input-group textarea { 
+    padding: 10px 14px; 
+    border: 1px solid #dcdde1; 
+    border-radius: 6px; 
+    font-size: 14px; 
+    transition: border 0.2s; 
+    outline: none; 
+}
+
+.input-group input:focus, 
+.input-group textarea:focus { 
+    border-color: #00bcd4; 
+}
+
+.action-btn-primary { 
+    background: #1a252f; 
+    color: #fff; 
+    border: none; 
+    padding: 12px; 
+    border-radius: 6px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: background 0.2s; 
+}
+
+.action-btn-primary:hover { 
+    background: #00bcd4; 
+}
+
+.catalog-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 20px; 
+}
+
+.catalog-card { 
+    background: #fff; 
+    border-radius: 10px; 
+    border: 1px solid #eef2f5; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02); 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+    transition: transform 0.2s; 
+}
+
+.catalog-card:hover { 
+    transform: translateY(-3px); 
+}
+
+.catalog-card-header { 
+    background: #f8fafc; 
+    padding: 16px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    border-bottom: 1px solid #eef2f5; 
+}
+
+.catalog-card-header h4 { 
+    margin: 0; 
+    font-size: 16px; 
+    color: #2c3e50; 
+    max-width: 70%; 
+}
+
+.price-tag { 
+    font-size: 18px; 
+    font-weight: 700; 
+    color: #00bcd4; 
+}
+
+.catalog-card-body { 
+    padding: 16px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+}
+
+.duration-pill { 
+    font-size: 12px; 
+    font-weight: 600; 
+    color: #7f8c8d; 
+    margin: 0; 
+}
+
+.services-list-text { 
+    margin: 0; 
+    font-size: 13px; 
+    color: #57606f; 
+    line-height: 1.5; 
+}
+
+.center-loader { 
+    display: flex; 
+    justify-content: center; 
+    padding: 100px; 
+}

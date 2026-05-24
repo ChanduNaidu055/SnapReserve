@@ -1,0 +1,16 @@
+.loader-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+  width: 100%;
+}
+
+.loader-text {
+  margin-top: 15px;
+  font-family: Arial, sans-serif;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+}

@@ -1,0 +1,66 @@
+.analytics-workspace {
+  padding: 2rem 4rem;
+  min-height: 100vh;
+}
+
+.analytics-header h1 {
+  font-size: 2.2rem;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.analytics-header p {
+  color: #a0a0a0;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.chart-card {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.chart-card h3 {
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  border-bottom: 1px solid #2a2a2a;
+  padding-bottom: 0.5rem;
+}
+
+.chart-wrapper {
+  height: 350px;
+  width: 100%;
+}
+
+.legend-pills {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.legend-pills span {
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  padding-bottom: 0.2rem;
+  margin-top: 20px;
+  gap: 20px;
+  color: black;
+  font-weight: bold;
+}
+
+@media (max-width: 992px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .analytics-workspace { padding: 1.5rem; }
+}

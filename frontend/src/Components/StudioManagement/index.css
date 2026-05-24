@@ -1,0 +1,101 @@
+.management-workspace { 
+    max-width: 1150px; 
+    margin: 0 auto; 
+    font-family: sans-serif; 
+    padding: 20px; 
+}
+.management-heading-zone { 
+    margin-bottom: 30px; 
+}
+.management-heading-zone h1 { 
+    font-size: 28px; 
+    color: #1a252f; 
+    margin: 0 0 6px 0; 
+}
+.management-heading-zone p { 
+    margin: 0; 
+    color: #7f8c8d; 
+    font-size: 15px; 
+}
+
+.table-responsive-wrapper { 
+    background: #fff; 
+    border-radius: 12px; 
+    border: 1px solid #eef2f5; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02); 
+    overflow-x: auto; 
+}
+
+.premium-data-table { 
+    width: 100%; 
+    min-width: 1100px; 
+    border-collapse: collapse; 
+    text-align: left; 
+    font-size: 14px; 
+}
+
+.premium-data-table th { 
+    background: #f8fafc; 
+    padding: 16px 20px; 
+    color: #34495e; 
+    font-weight: 700; 
+    border-bottom: 1px solid #eef2f5; 
+    text-transform: uppercase; 
+    font-size: 12px; 
+    letter-spacing: 0.5px; 
+}
+.premium-data-table td { 
+    padding: 16px 20px; 
+    border-bottom: 1px solid #fafbfc; 
+    color: #2c3e50; 
+}
+.premium-data-table tr:last-child td { 
+    border-bottom: none; 
+}
+.premium-data-table tr:hover td { 
+    background: #fdfdfd; 
+}
+
+.client-bold-title { 
+    font-weight: 600; 
+    color: #1a252f; 
+}
+.photographer-name-text { 
+    font-weight: 500; 
+    color: #34495e; 
+}
+.event-tag-bubble { 
+    background: #f1f5f9; 
+    padding: 4px 10px; 
+    border-radius: 6px; 
+    font-size: 12px; 
+    color: #475569; 
+    font-weight: 500; 
+}
+
+.table-row-picker { 
+    padding: 6px 12px; 
+    border-radius: 6px; 
+    border: 1px solid #dcdde1; 
+    background: #fafbfc; 
+    font-size: 13px; 
+    font-weight: 600; 
+    outline: none; 
+    cursor: pointer; 
+    width: 100%; 
+    max-width: 120px; 
+}
+.table-row-picker:focus { 
+    border-color: #00bcd4; 
+}
+
+.empty-table-prompt { 
+    text-align: center; 
+    padding: 40px; 
+    color: #7f8c8d; 
+}
+.center-loader-spinner { 
+    display: flex; 
+    justify-content: center; 
+    padding: 100px; 
+}
