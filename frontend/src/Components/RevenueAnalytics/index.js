@@ -3,7 +3,8 @@ import axios from "axios";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import "./index.css";
 
-const API_URL = process.env.REACT_APP_API_URL || "https://snapreserve-production.up.railway.app";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+//const API_URL = "http://localhost:4000";
 
 const COLORS = ["#00bcd4", "#ff4081", "#7c4dff"];
 

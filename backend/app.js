@@ -1,13 +1,16 @@
+const cors = require("cors");
 const express = require("express");
 const app = express();
-
 const path = require("path");
-const { title } = require("process");
-const dbDirectory = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
-const dbPath = path.join(dbDirectory, "studio.db");
+const dbPath = path.join(__dirname, "studio.db");
 
 const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
+
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
 
 app.use(express.json());
 
@@ -20,10 +23,10 @@ const initializeDbAndServer = async () => {
     });
     const PORT = process.env.PORT || 4000;
     app.listen(PORT, () => {
-      console.log("Server is running on port ${PORT}");
+      console.log(`Server is running on port ${PORT}`);
     });
   } catch (e) {
-    console.log(e.error_msg);
+    console.log(`Database initialization failed: ${e.message}`);
     process.exit(1);
   }
 };
@@ -32,11 +35,15 @@ initializeDbAndServer();
 
 // 1. photography package API
 app.post("/api/packages", async (req, res) => {
-  const { name, price, duration, services } = req.body;
-  const addTodo = `insert into photography_packages (name, price, duration, services)
-        values ('${name}', ${price}, '${duration}', '${services}');`;
-  await db.run(addTodo);
-  res.send("Photography package created successfully!");
+  try {
+    const { name, price, duration, services } = req.body;
+    const addTodo = `INSERT INTO photography_packages (name, price, duration, services) VALUES (?, ?, ?, ?);`;
+    await db.run(addTodo, [name, price, duration, services]);
+    res.send("Photography package created successfully!");
+  } catch (error) {
+    console.error("Error creating package:", error.message);
+    res.status(500).send("Error creating package");
+  }
 });
 
 // Get all photography packages
@@ -55,7 +62,7 @@ app.get("/api/packages", async (req, res) => {
     
     res.status(200).json(packages);
   } catch (error) {
-    console.error("Error fetching packages:", error);
+    console.error("Error fetching packages:", error.message);
     res.status(500).send("Error fetching packages");
   }
 });
@@ -75,153 +82,146 @@ app.get("/api/photographers", async (req, res) => {
     
     res.status(200).json(photographers);
   } catch (error) {
-    console.error("Error fetching photographers:", error);
+    console.error("Error fetching photographers:", error.message);
     res.status(500).send("Error fetching photographers");
   }
 });
 
 // 2. Checking photographers availability API
 app.get("/api/photographers/availability", async (req, res) => {
-  const { date } = req.query;
-  let getTodos;
-  
-  if (date) {
-    getTodos = `select * from photographers 
-                where availability_status = 'Available' 
-                and id not in (select photographer_id from bookings where date = '${date}' and status != 'Cancelled')`;
-  } else {
-    getTodos = `select * from photographers where availability_status = 'Available'`;
+  try {
+    const { date } = req.query;
+    let todos;
+    
+    if (date) {
+      const getTodos = `SELECT * FROM photographers 
+                        WHERE availability_status = 'Available' 
+                        AND id NOT IN (SELECT photographer_id FROM bookings WHERE date = ? AND status != 'Cancelled')`;
+      todos = await db.all(getTodos, [date]);
+    } else {
+      todos = await db.all(`SELECT * FROM photographers WHERE availability_status = 'Available'`);
+    }
+    res.send(todos);
+  } catch (error) {
+    console.error("Error checking availability:", error.message);
+    res.status(500).send("Error checking availability");
   }
-  
-  const todos = await db.all(getTodos);
-  res.send(todos);
 });
 
-// 3. Create booking API (UPDATED to include special_requests)
+// 3. Create booking API
 app.post("/api/bookings", async (req, res) => {
-  // Added special_requests to the extraction
-  const { customer_name, package_id, photographer_id, date, event_type, special_requests = "" } = req.body;
+  try {
+    const { customer_name, package_id, photographer_id, date, event_type, special_requests = "" } = req.body;
 
-  const checkOverlap = `select * from bookings 
-                        where photographer_id = ${photographer_id} 
-                        and date = '${date}' 
-                        and status != 'Cancelled'`;
-  const existingBooking = await db.get(checkOverlap);
-  
-  if (existingBooking) {
-    res.status(400).send("Photographer is already booked for this date!");
-  } else {
-    // Added special_requests to the SQL insert query
-    const addTodo = `insert into bookings (customer_name, package_id, photographer_id, date, event_type, special_requests, status)
-          values ('${customer_name}', ${package_id}, ${photographer_id}, '${date}', '${event_type}', '${special_requests}', 'Pending');`;
-    await db.run(addTodo);
+    const checkOverlap = `SELECT * FROM bookings 
+                          WHERE photographer_id = ? 
+                          AND date = ? 
+                          AND status != 'Cancelled'`;
+    const existingBooking = await db.get(checkOverlap, [photographer_id, date]);
+    
+    if (existingBooking) {
+      return res.status(400).send("Photographer is already booked for this date!");
+    }
+
+    const addTodo = `INSERT INTO bookings (customer_name, package_id, photographer_id, date, event_type, special_requests, status)
+                     VALUES (?, ?, ?, ?, ?, ?, 'Pending');`;
+    await db.run(addTodo, [customer_name, package_id, photographer_id, date, event_type, special_requests]);
     res.send("Booking created successfully!");
+  } catch (error) {
+    console.error("Error creating booking:", error.message);
+    res.status(500).send("Error creating booking");
   }
 });
 
 // 4. Show bookings API
 app.get("/api/bookings", async (req, res) => {
-  const { photographer_id, package_id, status, customer_name, limit = 10, offset = 0 } = req.query;
-  
-  let getTodos = `select * from bookings where 1=1`;
-  
-  if (photographer_id) {
-    getTodos += ` and photographer_id = ${photographer_id}`;
+  try {
+    const { photographer_id, package_id, status, customer_name, limit = 10, offset = 0 } = req.query;
+
+    let getTodos = `SELECT * FROM bookings WHERE 1=1`;
+    const params = [];
+
+    if (photographer_id) {
+      getTodos += ` AND photographer_id = ?`;
+      params.push(photographer_id);
+    }
+    if (package_id) {
+      getTodos += ` AND package_id = ?`;
+      params.push(package_id);
+    }
+    if (status) {
+      getTodos += ` AND status = ?`;
+      params.push(status);
+    }
+    if (customer_name) {
+      getTodos += ` AND customer_name LIKE ?`;
+      params.push(`%${customer_name}%`);
+    }
+
+    getTodos += ` LIMIT ? OFFSET ?`;
+    params.push(Number(limit), Number(offset));
+
+    const todos = await db.all(getTodos, params);
+    res.send(todos);
+  } catch (error) {
+    console.error("Error fetching bookings:", error.message);
+    res.status(500).send("Error fetching bookings");
   }
-  if (package_id) {
-    getTodos += ` and package_id = ${package_id}`;
-  }
-  if (status) {
-    getTodos += ` and status = '${status}'`;
-  }
-  if (customer_name) {
-    getTodos += ` and customer_name like '%${customer_name}%'`;
-  }
-  
-  getTodos += ` limit ${limit} offset ${offset}`;
-  
-  const todos = await db.all(getTodos);
-  res.send(todos);
 });
 
 // 5. Update booking status API
 app.put("/api/bookings/:id/status", async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-  const deleteTodo = `update bookings set status = '${status}' where id = '${id}'`;
-  await db.run(deleteTodo);
-  res.send("Booking status updated successfully!");
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const updateTodo = `UPDATE bookings SET status = ? WHERE id = ?`;
+    await db.run(updateTodo, [status, id]);
+    res.send("Booking status updated successfully!");
+  } catch (error) {
+    console.error("Error updating status:", error.message);
+    res.status(500).send("Error updating status");
+  }
 });
 
 // 6. Return booking metrics API
 app.get("/api/dashboard/studio", async (req, res) => {
-  const revenueQuery = `select sum(p.price) as total_revenue 
-                        from bookings b join photography_packages p on b.package_id = p.id 
-                        where b.status != 'Cancelled'`;
-  const revenueData = await db.get(revenueQuery);
-  
-  const upcomingQuery = `select count(*) as upcoming_shoots from bookings where status = 'Confirmed' or status = 'Pending'`;
-  const upcomingData = await db.get(upcomingQuery);
-  
-  const utilizationQuery = `select count(distinct photographer_id) as utilized_photographers from bookings where status != 'Cancelled'`;
-  const utilizationData = await db.get(utilizationQuery);
-  
-  res.send({
-    package_revenue: revenueData.total_revenue || 0,
-    upcoming_shoots: upcomingData.upcoming_shoots || 0,
-    photographer_utilization: utilizationData.utilized_photographers || 0
-  });
+  try {
+    const revenueQuery = `SELECT sum(p.price) as total_revenue 
+                          FROM bookings b JOIN photography_packages p ON b.package_id = p.id 
+                          WHERE b.status != 'Cancelled'`;
+    const revenueData = await db.get(revenueQuery);
+    
+    const upcomingQuery = `SELECT count(*) as upcoming_shoots FROM bookings WHERE status = 'Confirmed' OR status = 'Pending'`;
+    const upcomingData = await db.get(upcomingQuery);
+    
+    const utilizationQuery = `SELECT count(distinct photographer_id) as utilized_photographers FROM bookings WHERE status != 'Cancelled'`;
+    const utilizationData = await db.get(utilizationQuery);
+    
+    res.send({
+      package_revenue: revenueData.total_revenue || 0,
+      upcoming_shoots: upcomingData.upcoming_shoots || 0,
+      photographer_utilization: utilizationData.utilized_photographers || 0
+    });
+  } catch (error) {
+    console.error("Error compiling dashboard metrics:", error.message);
+    res.status(500).send("Error generating dashboard data");
+  }
 });
 
 // BONUS: GALLERY PREVIEW API
 app.get("/api/gallery", async (req, res) => {
-  let responded = false;
-
-  const timeout = setTimeout(() => {
-    if (!responded) {
-      responded = true;
-      return res.json(getFallbackGallery());
-    }
-  }, 3000);
-
   try {
-    const dbQuery = db.all("SELECT * FROM gallery", [], (err, rows) => {
-      if (responded) return;
-      responded = true;
-      clearTimeout(timeout);
-      if (err) console.error("❌ DB Error:", err.message);
-      res.json(!err && rows && rows.length > 0 ? rows : getFallbackGallery());
-    });
-
-    if (dbQuery instanceof Promise) {
-      const rows = await dbQuery;
-      if (!responded) {
-        responded = true;
-        clearTimeout(timeout);
-        res.json(rows && rows.length > 0 ? rows : getFallbackGallery());
-      }
-    }
+    if (!db) return res.json(getFallbackGallery());
+    const rows = await db.all("SELECT * FROM gallery");
+    res.json(rows && rows.length > 0 ? rows : getFallbackGallery());
   } catch (err) {
-    if (!responded) {
-      responded = true;
-      clearTimeout(timeout);
-      console.error("❌ Crash caught:", err.message);
-      res.json(getFallbackGallery());
-    }
+    console.error("❌ Gallery DB Error:", err.message);
+    res.json(getFallbackGallery());
   }
 });
 
 // BONUS: REVENUE ANALYTICS API
 app.get("/api/analytics/revenue", async (req, res) => {
-  let responded = false;
-
-  const timeout = setTimeout(() => {
-    if (!responded) {
-      responded = true;
-      return res.json(getFallbackAnalytics());
-    }
-  }, 3000);
-
   const processAnalytics = (rows) => {
     const pricingMatrix = { "Wedding": 3000, "Portrait": 500, "Commercial": 1500 };
     const packageMap = { "Weddings": 0, "Portraits": 0, "Commercial": 0 };
@@ -250,51 +250,38 @@ app.get("/api/analytics/revenue", async (req, res) => {
   };
 
   try {
-    const dbQuery = db.all("SELECT date, event_type, status FROM bookings WHERE date >= date('now', '-12 months')", [], (err, rows) => {
-      if (responded) return;
-      responded = true;
-      clearTimeout(timeout);
-      res.json(err ? getFallbackAnalytics() : processAnalytics(rows));
-    });
-
-    if (dbQuery instanceof Promise) {
-      const rows = await dbQuery;
-      if (!responded) {
-        responded = true;
-        clearTimeout(timeout);
-        res.json(processAnalytics(rows));
-      }
-    }
+    if (!db) return res.json(getFallbackAnalytics());
+    const rows = await db.all("SELECT date, event_type, status FROM bookings WHERE date >= date('now', '-12 months')");
+    res.json(processAnalytics(rows));
   } catch (err) {
-     if (!responded) {
-        responded = true;
-        clearTimeout(timeout);
-        res.json(getFallbackAnalytics());
-     }
+    console.error("❌ Analytics DB Error:", err.message);
+    res.json(getFallbackAnalytics());
   }
 });
 
 // BOOKING REMINDER NOTIFICATIONS API
-app.get("/api/bookings/reminders", (req, res) => {
-  const dbInstance = typeof db !== 'undefined' ? db : (typeof database !== 'undefined' ? database : null);
-  if (!dbInstance) return res.json([]);
-
-  dbInstance.all("SELECT id, customer_name, date, event_type, status FROM bookings", [], (err, rows) => {
-    if (err) {
-      console.error("❌ Reminders database error:", err.message);
-      return res.json([]);
-    }
+app.get("/api/bookings/reminders", async (req, res) => {
+  try {
+    if (!db) return res.json([]);
+    const rows = await db.all("SELECT id, customer_name, date, event_type, status FROM bookings");
     
     const reminders = [];
     if (rows) {
       rows.forEach(row => {
         if (row.status === "Pending") {
-          reminders.push({ id: row.id, type: "warning", message: `Approval required for ${row.customer_name}` });
+          reminders.push({ 
+            id: row.id, 
+            type: "warning", 
+            message: `Approval required for ${row.customer_name}` 
+          });
         }
       });
     }
     res.json(reminders);
-  });
+  } catch (err) {
+    console.error("❌ Reminders database error:", err.message);
+    res.json([]);
+  }
 });
 
 // HELPER FUNCTIONS

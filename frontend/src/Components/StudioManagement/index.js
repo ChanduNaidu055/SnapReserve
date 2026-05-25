@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./index.css"; 
 
-const API_URL = process.env.REACT_APP_API_URL || "https://snapreserve-production.up.railway.app";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+//const API_URL = "http://localhost:4000";
 
 const StudioManagement = () => {
   const [bookings, setBookings] = useState([]);

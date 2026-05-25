@@ -3,7 +3,8 @@ import axios from "axios";
 import { Oval } from "react-loader-spinner";
 import "./index.css";
 
-const API_URL = process.env.REACT_APP_API_URL || "https://snapreserve-production.up.railway.app";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+//const API_URL = "http://localhost:4000";
 
 const PhotographerSchedule = () => {
   const [photographers, setPhotographers] = useState([]);
