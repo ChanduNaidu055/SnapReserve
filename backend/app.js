@@ -2,14 +2,16 @@ const cors = require("cors");
 const express = require("express");
 const app = express();
 const path = require("path");
-const dbPath = path.join(__dirname, "studio.db");
+
+const dbDirectory = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
+const dbPath = path.join(dbDirectory, "studio.db");
 
 const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
 
 app.use(cors({
-origin: ["http://localhost:3000", "https://snap-reserve-xi.vercel.app"],
-credentials: true
+  origin: ["http://localhost:3000", "https://snap-reserve-xi.vercel.app"],
+  credentials: true
 }));
 
 app.use(express.json());
@@ -21,6 +23,97 @@ const initializeDbAndServer = async () => {
       filename: dbPath,
       driver: sqlite3.Database,
     });
+
+    //TABLE CREATION
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT DEFAULT 'customer'
+      );
+
+      CREATE TABLE IF NOT EXISTS event_categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS photography_packages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        price REAL NOT NULL,
+        duration TEXT NOT NULL,
+        services TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS photographers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        availability_status TEXT DEFAULT 'Available'
+      );
+
+      CREATE TABLE IF NOT EXISTS bookings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_name TEXT NOT NULL,
+        package_id INTEGER,
+        photographer_id INTEGER,
+        date TEXT NOT NULL,
+        event_type TEXT,
+        special_requests TEXT DEFAULT '',
+        status TEXT DEFAULT 'Pending',
+        FOREIGN KEY (package_id) REFERENCES photography_packages(id),
+        FOREIGN KEY (photographer_id) REFERENCES photographers(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS booking_status_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        booking_id INTEGER NOT NULL,
+        old_status TEXT,
+        new_status TEXT,
+        changed_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (booking_id) REFERENCES bookings(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS gallery (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category TEXT,
+        src TEXT,
+        title TEXT
+      );
+    `);
+
+    // --- SEED DATA (So your database isn't empty on first load) ---
+    const pkgCount = await db.get(`SELECT count(*) as count FROM photography_packages`);
+    if (pkgCount.count === 0) {
+      await db.run(`
+        INSERT INTO photography_packages (name, price, duration, services) VALUES
+        ('Essential Portrait Session', 199, '1 Hour', 'Basic editing, 20 digital photos'),
+        ('Premium Wedding Collection', 1499, '8 Hours', 'Full day coverage, album, 2 photographers'),
+        ('Commercial Product Shoot', 599, '4 Hours', 'Product photography, white background, editing'),
+        ('Family Mini-Session', 149, '30 Minutes', '10 edited photos, online gallery')
+      `);
+    }
+
+    const photoCount = await db.get(`SELECT count(*) as count FROM photographers`);
+    if (photoCount.count === 0) {
+      await db.run(`
+        INSERT INTO photographers (name, availability_status) VALUES
+        ('Alex Stone', 'Available'),
+        ('Sarah Jenkins', 'Available'),
+        ('David Chen', 'Available')
+      `);
+    }
+
+    const catCount = await db.get(`SELECT count(*) as count FROM event_categories`);
+    if (catCount.count === 0) {
+      await db.run(`
+        INSERT INTO event_categories (name) VALUES
+        ('Wedding'), ('Portrait'), ('Commercial'), ('Family'), ('Birthday'), ('Corporate')
+      `);
+    }
+
+    // --- START SERVER ---
     const PORT = process.env.PORT || 4000;
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
