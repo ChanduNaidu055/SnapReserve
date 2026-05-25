@@ -3,9 +3,6 @@ import axios from "axios";
 import { useNotification } from "../../Context/NotificationContext"; 
 import "./index.css";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
-//const API_URL = "http://localhost:4000";
-
 const BookingReservation = () => {
   const { addNotification } = useNotification(); 
 
@@ -24,7 +21,7 @@ const BookingReservation = () => {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const packagesResponse = await axios.get(`${API_URL}/api/packages`);
+        const packagesResponse = await axios.get("/api/packages");
         setPackagesList(packagesResponse.data || []);
       } catch (err) {
         console.error("Failed to fetch packages.", err);
@@ -40,7 +37,7 @@ const BookingReservation = () => {
         return;
       }
       try {
-        const response = await axios.get(`${API_URL}/api/photographers/availability?date=${date}`);
+        const response = await axios.get(`/api/photographers/availability?date=${date}`);
         setPhotographersList(response.data || []);
       } catch (err) {
         console.error("Failed to fetch available photographers.", err);
@@ -60,7 +57,7 @@ const BookingReservation = () => {
     }
 
     try {
-      await axios.post(`${API_URL}/api/bookings`, {
+      await axios.post("/api/bookings", {
         customer_name: customerName,
         package_id: parseInt(packageId),
         photographer_id: parseInt(photographerId),

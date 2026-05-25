@@ -3,9 +3,6 @@ import axios from "axios";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import "./index.css";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
-//const API_URL = "http://localhost:4000";
-
 const COLORS = ["#00bcd4", "#ff4081", "#7c4dff"];
 
 const RevenueAnalytics = () => {
@@ -15,7 +12,7 @@ const RevenueAnalytics = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/analytics/revenue`);
+        const response = await axios.get("/api/analytics/revenue");
         setAnalyticsData({
           monthlyRevenue: Array.isArray(response.data?.monthlyRevenue) ? response.data.monthlyRevenue : [],
           packageBreakdown: Array.isArray(response.data?.packageBreakdown) ? response.data.packageBreakdown : []

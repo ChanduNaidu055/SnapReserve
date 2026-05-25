@@ -2,20 +2,13 @@ const cors = require("cors");
 const express = require("express");
 const app = express();
 const path = require("path");
-
-const dbDirectory = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
-const dbPath = path.join(dbDirectory, "studio.db");
+const dbPath = path.join(__dirname, "studio.db");
 
 const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
 
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
 app.use(cors({
-  origin: ["http://localhost:3000", "https://snap-reserve-xi.vercel.app"],
+  origin: "http://localhost:3000",
   credentials: true
 }));
 
@@ -28,56 +21,6 @@ const initializeDbAndServer = async () => {
       filename: dbPath,
       driver: sqlite3.Database,
     });
-
-    const tableQueries = [
-      `CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT DEFAULT 'customer');`,
-      
-      `CREATE TABLE IF NOT EXISTS event_categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);`,
-      
-      `CREATE TABLE IF NOT EXISTS photography_packages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, price REAL NOT NULL, duration TEXT NOT NULL, services TEXT NOT NULL);`,
-      
-      `CREATE TABLE IF NOT EXISTS photographers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, availability_status TEXT DEFAULT 'Available');`,
-      
-      `CREATE TABLE IF NOT EXISTS bookings (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_name TEXT NOT NULL, package_id INTEGER, photographer_id INTEGER, date TEXT NOT NULL, event_type TEXT, special_requests TEXT DEFAULT '', status TEXT DEFAULT 'Pending', FOREIGN KEY (package_id) REFERENCES photography_packages(id), FOREIGN KEY (photographer_id) REFERENCES photographers(id));`,
-      
-      `CREATE TABLE IF NOT EXISTS booking_status_logs (id INTEGER PRIMARY KEY AUTOINCREMENT, booking_id INTEGER NOT NULL, old_status TEXT, new_status TEXT, changed_at TEXT DEFAULT (datetime('now')), FOREIGN KEY (booking_id) REFERENCES bookings(id));`,
-      
-      `CREATE TABLE IF NOT EXISTS gallery (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT, src TEXT, title TEXT);`
-    ];
-
-    for (let query of tableQueries) {
-      await db.run(query);
-    }
-
-    const pkgCount = await db.get(`SELECT count(*) as count FROM photography_packages`);
-    if (pkgCount.count === 0) {
-      await db.run(`
-        INSERT INTO photography_packages (name, price, duration, services) VALUES
-        ('Essential Portrait Session', 199, '1 Hour', 'Basic editing, 20 digital photos'),
-        ('Premium Wedding Collection', 1499, '8 Hours', 'Full day coverage, album, 2 photographers'),
-        ('Commercial Product Shoot', 599, '4 Hours', 'Product photography, white background, editing'),
-        ('Family Mini-Session', 149, '30 Minutes', '10 edited photos, online gallery')
-      `);
-    }
-
-    const photoCount = await db.get(`SELECT count(*) as count FROM photographers`);
-    if (photoCount.count === 0) {
-      await db.run(`
-        INSERT INTO photographers (name, availability_status) VALUES
-        ('Alex Stone', 'Available'),
-        ('Sarah Jenkins', 'Available'),
-        ('David Chen', 'Available')
-      `);
-    }
-
-    const catCount = await db.get(`SELECT count(*) as count FROM event_categories`);
-    if (catCount.count === 0) {
-      await db.run(`
-        INSERT INTO event_categories (name) VALUES
-        ('Wedding'), ('Portrait'), ('Commercial'), ('Family'), ('Birthday'), ('Corporate')
-      `);
-    }
-
     const PORT = process.env.PORT || 4000;
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
@@ -90,6 +33,7 @@ const initializeDbAndServer = async () => {
 
 initializeDbAndServer();
 
+// 1. photography package API
 app.post("/api/packages", async (req, res) => {
   try {
     const { name, price, duration, services } = req.body;
@@ -102,6 +46,7 @@ app.post("/api/packages", async (req, res) => {
   }
 });
 
+// Get all photography packages
 app.get("/api/packages", async (req, res) => {
   try {
     const packages = await db.all(`SELECT * FROM photography_packages`);
@@ -122,7 +67,7 @@ app.get("/api/packages", async (req, res) => {
   }
 });
 
-
+// Get all photographers for the Booking Dropdown API
 app.get("/api/photographers", async (req, res) => {
   try {
     const photographers = await db.all(`SELECT * FROM photographers`);
@@ -142,6 +87,7 @@ app.get("/api/photographers", async (req, res) => {
   }
 });
 
+// 2. Checking photographers availability API
 app.get("/api/photographers/availability", async (req, res) => {
   try {
     const { date } = req.query;
@@ -162,7 +108,7 @@ app.get("/api/photographers/availability", async (req, res) => {
   }
 });
 
-
+// 3. Create booking API
 app.post("/api/bookings", async (req, res) => {
   try {
     const { customer_name, package_id, photographer_id, date, event_type, special_requests = "" } = req.body;
@@ -187,6 +133,7 @@ app.post("/api/bookings", async (req, res) => {
   }
 });
 
+// 4. Show bookings API
 app.get("/api/bookings", async (req, res) => {
   try {
     const { photographer_id, package_id, status, customer_name, limit = 10, offset = 0 } = req.query;
@@ -222,6 +169,7 @@ app.get("/api/bookings", async (req, res) => {
   }
 });
 
+// 5. Update booking status API
 app.put("/api/bookings/:id/status", async (req, res) => {
   try {
     const { id } = req.params;
@@ -235,7 +183,7 @@ app.put("/api/bookings/:id/status", async (req, res) => {
   }
 });
 
-
+// 6. Return booking metrics API
 app.get("/api/dashboard/studio", async (req, res) => {
   try {
     const revenueQuery = `SELECT sum(p.price) as total_revenue 
@@ -260,6 +208,7 @@ app.get("/api/dashboard/studio", async (req, res) => {
   }
 });
 
+// BONUS: GALLERY PREVIEW API
 app.get("/api/gallery", async (req, res) => {
   try {
     if (!db) return res.json(getFallbackGallery());
@@ -271,6 +220,7 @@ app.get("/api/gallery", async (req, res) => {
   }
 });
 
+// BONUS: REVENUE ANALYTICS API
 app.get("/api/analytics/revenue", async (req, res) => {
   const processAnalytics = (rows) => {
     const pricingMatrix = { "Wedding": 3000, "Portrait": 500, "Commercial": 1500 };
@@ -309,6 +259,7 @@ app.get("/api/analytics/revenue", async (req, res) => {
   }
 });
 
+// BOOKING REMINDER NOTIFICATIONS API
 app.get("/api/bookings/reminders", async (req, res) => {
   try {
     if (!db) return res.json([]);
@@ -333,7 +284,7 @@ app.get("/api/bookings/reminders", async (req, res) => {
   }
 });
 
-//HELPERS 
+// HELPER FUNCTIONS
 function getFallbackGallery() {
   return [
     { id: 1, category: "Wedding", src: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80", title: "The Johnson Wedding" },

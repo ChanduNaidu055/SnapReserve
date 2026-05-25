@@ -3,9 +3,6 @@ import axios from "axios";
 import { Oval } from "react-loader-spinner";
 import "./index.css";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
-//const API_URL = "http://localhost:4000";
-
 const PackageListing = () => {
   const [packages, setPackages] = useState([]);
   const [name, setName] = useState("");
@@ -17,7 +14,7 @@ const PackageListing = () => {
 
   const fetchPackages = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/packages`); 
+      const response = await axios.get("/api/packages"); 
       setPackages(Array.isArray(response.data) ? response.data : []);
       setLoading(false);
     } catch (err) {
@@ -35,7 +32,7 @@ const PackageListing = () => {
       return;
     }
     try {
-      await axios.post(`${API_URL}/api/packages`, { name, price: parseInt(price), duration, services }); 
+      await axios.post("/api/packages", { name, price: parseInt(price), duration, services }); 
       alert("Studio service package deployed successfully!");
       setName(""); setPrice(""); setDuration(""); setServices("");
       fetchPackages();
