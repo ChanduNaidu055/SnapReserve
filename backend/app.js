@@ -8,8 +8,8 @@ const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
 
 app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true
+origin: ["http://localhost:3000", "https://snap-reserve-xi.vercel.app"],
+credentials: true
 }));
 
 app.use(express.json());
